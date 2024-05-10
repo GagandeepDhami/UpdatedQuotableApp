@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Quotable App - Add, Delete, Modify Quotes</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="p-5 bg-primary text-white text-center">
+    <h1>Quotable!</h1>
+    <p>Where you can add, delete, or modify your own quotes!</p> 
+</div>
+
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+    <div class="container-fluid">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class= "nav-link active" href="index.html">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class= "nav-link" href="AddQuotes.html">Add A Quote</a>
+            </li>
+            <li class="nav-item">
+                <a class= "nav-link" href="Login.html">Login</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="row">
+    <div class="col-sm-12">
+        <h2>Add, Delete, Modify a Quote</h2>
+        <form id="quoteForm">
+        <div class="mb-3">
+            <label for="quoteText" class="form-label">Quote</label>
+            <textarea class="form-control" id="quoteText" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="quoteSource" class="form-label">Source</label>
+            <input type="text" class="form-control" id="quoteSource">
+        </div>
+        <div class="mb-3">
+            <label for="quoteDate" class="form-label">Date</label>
+            <input type="date" class="form-control" id="quoteDate">
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="privateQuote">
+            <label class="form-check-label" for="privateQuote">Private Quote</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Quote</button>
+        <button type="button" class="btn btn-danger" id="deleteQuote">Delete Quote</button>
+        <button type="button" class="btn btn-warning" id="modifyQuote">Modify Quote</button>
+        </form>
+        <div id="quoteContainer" class="mt-3"></div>
+    </div>
+    </div>
+</div>
+
+<div class="mt-5 p-4 bg-dark text-white text-center">
+    <p>Footer</p>
+</div>
+
+<script>
+  // Simulated database of quotes and comments
+    let quotes = [];
+
+  // Function to add a quote
+    function addQuote(quote, source, date, isPrivate) {
+    quotes.push({ quote, source, date, isPrivate, comments: [] });
+    renderQuotes();
+}
+
+  // Function to delete a quote
+    function deleteQuote(index) {
+    quotes.splice(index, 1);
+    renderQuotes();
+}
+
+  // Function to modify a quote
+    function modifyQuote(index, newQuote) {
+    quotes[index].quote = newQuote;
+    renderQuotes();
+}
+
+  // Function to add a comment to a quote
+    function addComment(index, comment) {
+    quotes[index].comments.push(comment);
+    renderQuotes();
+}
+
+  // Function to render quotes
+    function renderQuotes() {
+    const quoteContainer = document.getElementById('quoteContainer');
+    quoteContainer.innerHTML = ''; // Clear existing quotes
+    quotes.forEach((quoteObj, index) => {
+        const { quote, source, date, isPrivate, comments } = quoteObj;
+        const quoteElement = document.createElement('div');
+        quoteElement.classList.add('alert', 'alert-success', 'mb-2');
+        quoteElement.innerHTML = `<strong>Quote:</strong> ${quote}<br><strong>Source:</strong> ${source}<br><strong>Date:</strong> ${date}<br><strong>Private:</strong> ${isPrivate ? 'Yes' : 'No'}`;
+
+      // Delete button
+        const deleteButton = document.createElement('button');
+        deleteButton.classList.add('btn', 'btn-danger', 'me-2');
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', () => deleteQuote(index));
+        
+      // Modify button
+        const modifyButton = document.createElement('button');
+        modifyButton.classList.add('btn', 'btn-warning', 'me-2');
+        modifyButton.textContent = 'Modify';
+        modifyButton.addEventListener('click', () => {
+        const newQuote = prompt('Enter the modified quote:', quotes[index].quote);
+        if (newQuote !== null) {
+            modifyQuote(index, newQuote);
+        }
+        });
+
+      // Comment section
+        if (!isPrivate) {
+        const commentButton = document.createElement('button');
+        commentButton.classList.add('btn', 'btn-info', 'me-2');
+        commentButton.textContent = 'Add Comment';
+        commentButton.addEventListener('click', () => {
+            const comment = prompt('Enter your comment:');
+            if (comment !== null) {
+            addComment(index, comment);
+            }
+        });
+        quoteElement.appendChild(commentButton);
+        }
+        
+      // Append buttons to quote element
+        quoteElement.appendChild(deleteButton);
+        quoteElement.appendChild(modifyButton);
+
+      // Render comments
+        const commentsList = document.createElement('ul');
+        commentsList.classList.add('list-group', 'mt-2');
+        comments.forEach(comment => {
+        const commentItem = document.createElement('li');
+        commentItem.classList.add('list-group-item');
+        commentItem.textContent = comment;
+        commentsList.appendChild(commentItem);
+        });
+        quoteElement.appendChild(commentsList);
+
+        quoteContainer.appendChild(quoteElement);
+    });
+    }
+
+  // Add quote form submission
+    document.getElementById('quoteForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const quoteText = document.getElementById('quoteText').value.trim();
+    const quoteSource = document.getElementById('quoteSource').value.trim();
+    const quoteDate = document.getElementById('quoteDate').value.trim();
+    const isPrivate = document.getElementById('privateQuote').checked;
+    if (quoteText !== '' && quoteSource !== '' && quoteDate !== '') {
+        addQuote(quoteText, quoteSource, quoteDate, isPrivate);
+        document.getElementById('quoteText').value = ''; // Clear input fields
+        document.getElementById('quoteSource').value = '';
+        document.getElementById('quoteDate').value = '';
+        document.getElementById('privateQuote').checked = false;
+    } else {
+        alert('Please fill in all fields.');
+    }
+    });
+
+  // Initial rendering of quotes
+    renderQuotes();
+</script>
+
+</body>
+</html>
+
+
